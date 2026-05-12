@@ -1,0 +1,81 @@
+<div
+  id="audio-synth"
+  phx-hook="AudioSynth"
+  class="min-h-screen bg-zinc-950 text-zinc-100 font-mono p-6"
+>
+  <header class="flex items-center justify-between mb-8 border-b border-zinc-800 pb-4">
+    <div>
+      <h1 class="text-xl font-bold tracking-tight text-zinc-100">metrics-noise</h1>
+      <p class="text-xs text-zinc-500 mt-0.5">OTLP → sound</p>
+    </div>
+    <button
+      phx-click="toggle_audio"
+      class={[
+        "px-5 py-2 rounded text-sm font-semibold tracking-widest transition-all",
+        if(@playing,
+          do: "bg-red-900 text-red-300 hover:bg-red-800 border border-red-700",
+          else: "bg-emerald-900 text-emerald-300 hover:bg-emerald-800 border border-emerald-700"
+        )
+      ]}
+    >
+      <%= if @playing, do: "■ STOP", else: "▶ START" %>
+    </button>
+  </header>
+
+  <%= if map_size(@metrics) == 0 do %>
+    <div class="flex flex-col items-center justify-center h-64 text-zinc-600">
+      <p class="text-lg mb-2">no metrics yet</p>
+      <p class="text-xs">
+        send OTLP/HTTP JSON to <code class="text-zinc-400">POST /v1/metrics</code>
+      </p>
+      <p class="text-xs mt-4 text-zinc-700">
+        otel-collector: otlphttp exporter → encoding: json → endpoint: http://localhost:4000
+      </p>
+    </div>
+  <% else %>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      <%= for {name, index} <- Enum.with_index(@metric_order), metric = Map.get(@metrics, name), metric != nil do %>
+        <div class="bg-zinc-900 border border-zinc-800 rounded-lg p-4 hover:border-zinc-600 transition-colors">
+          <div class="text-xs text-zinc-500 truncate mb-2" title={name}><%= name %></div>
+
+          <div class="text-2xl font-bold text-cyan-400 mb-3">
+            <%= format_value(metric.value) %>
+          </div>
+
+          <svg
+            viewBox="0 0 120 32"
+            class="w-full h-8 mb-3"
+            preserveAspectRatio="none"
+            aria-hidden="true"
+          >
+            <path
+              d={sparkline_path(metric.history)}
+              fill="none"
+              stroke="#22d3ee"
+              stroke-width="1.5"
+              stroke-linejoin="round"
+              stroke-linecap="round"
+              opacity="0.7"
+            />
+          </svg>
+
+          <div class="flex items-center justify-between text-xs">
+            <span class="text-zinc-600">
+              <%= Float.round(metric.min, 3) %> – <%= Float.round(metric.max, 3) %>
+            </span>
+            <span class={["px-1.5 py-0.5 rounded text-xs", note_color(index)]}>
+              <%= note_name(MetricsStore.normalize(metric.value, metric.min, metric.max), index) %>
+            </span>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+
+  <%= if @playing do %>
+    <div class="mt-6 flex items-center gap-2 text-xs text-emerald-600">
+      <span class="animate-pulse">●</span>
+      <span>playing · <%= map_size(@metrics) %> metric(s)</span>
+    </div>
+  <% end %>
+</div>
