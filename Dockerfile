@@ -19,11 +19,12 @@ RUN mix tailwind.install --if-missing && \
     mix esbuild.install --if-missing
 
 COPY priv/ priv/
+COPY lib/ lib/
+RUN mix compile
+
 COPY assets/ assets/
 RUN mix assets.deploy
 
-COPY lib/ lib/
-RUN mix compile
 RUN mix release
 
 
