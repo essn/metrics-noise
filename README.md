@@ -117,6 +117,14 @@ The `encoding: json` flag is the only non-default setting. Everything else is st
 
 ---
 
+## TLS
+
+`force_ssl` is intentionally disabled. This app sits behind a reverse proxy (Traefik, nginx, etc.) that handles TLS termination. Enabling it causes the app to redirect internal OTLP HTTP traffic to the public HTTPS hostname, breaking collector-to-app delivery.
+
+If you expose this app directly without an ingress, re-enable it by uncommenting the block in [`config/prod.exs`](config/prod.exs).
+
+---
+
 ## Deploying to Kubernetes
 
 Prerequisites: a container registry, a cluster with the nginx ingress controller.
