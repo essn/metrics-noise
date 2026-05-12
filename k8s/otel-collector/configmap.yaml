@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: otel-collector-config
+  namespace: metrics-noise
+data:
+  config.yaml: |
+    extensions:
+      health_check:
+        endpoint: 0.0.0.0:13133
+
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: 0.0.0.0:4317
+          http:
+            endpoint: 0.0.0.0:4318
+
+    exporters:
+      # Forwards metrics to metrics-noise in OTLP/HTTP JSON (what the app parses)
+      otlphttp/metrics-noise:
+        endpoint: http://metrics-noise:4000
+        encoding: json
+
+      # Sink for traces and logs — replace with a real exporter if needed
+      debug:
+        verbosity: basic
+
+    service:
+      extensions: [health_check]
+      pipelines:
+        metrics:
+          receivers: [otlp]
+          exporters: [otlphttp/metrics-noise]
+        traces:
+          receivers: [otlp]
+          exporters: [debug]
+        logs:
+          receivers: [otlp]
+          exporters: [debug]

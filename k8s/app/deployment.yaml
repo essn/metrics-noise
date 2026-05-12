@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: metrics-noise
+  namespace: metrics-noise
+  labels:
+    app: metrics-noise
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: metrics-noise
+  template:
+    metadata:
+      labels:
+        app: metrics-noise
+    spec:
+      containers:
+        - name: metrics-noise
+          image: your-registry/metrics-noise:latest  # replace with your image
+          ports:
+            - containerPort: 4000
+              name: http
+          envFrom:
+            - configMapRef:
+                name: metrics-noise-config
+            - secretRef:
+                name: metrics-noise-secrets
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 4000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 4000
+            initialDelaySeconds: 15
+            periodSeconds: 30
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi

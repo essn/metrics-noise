@@ -1,0 +1,10 @@
+_build/
+deps/
+.git/
+.claude/
+k8s/
+priv/static/assets/
+priv/static/cache_manifest.json
+assets/node_modules/
+*.md
+AGENTS.md

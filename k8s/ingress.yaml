@@ -1,0 +1,28 @@
+# Requires the nginx ingress controller (or adjust ingressClassName for your cluster).
+# https://kubernetes.github.io/ingress-nginx/deploy/
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: metrics-noise
+  namespace: metrics-noise
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+    # WebSocket support is required for Phoenix LiveView
+    nginx.ingress.kubernetes.io/proxy-http-version: "1.1"
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection "upgrade";
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: metrics-noise.example.com  # replace with your hostname (must match PHX_HOST)
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: metrics-noise
+                port:
+                  number: 4000
