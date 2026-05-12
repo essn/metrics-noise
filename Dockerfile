@@ -28,7 +28,7 @@ RUN mix assets.deploy
 RUN mix release
 
 
-FROM alpine:3.21 AS runner
+FROM elixir:1.19-otp-28-alpine AS runner
 
 RUN apk add --no-cache libstdc++ openssl ncurses-libs
 
